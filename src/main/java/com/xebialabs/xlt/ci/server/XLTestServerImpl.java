@@ -181,6 +181,10 @@ public class XLTestServerImpl implements XLTestServer {
                 case 400:
                     importError = mapper.readValue(response.body().byteStream(), ImportError.class);
                     throw new IllegalStateException(importError.getMessage());
+                case 402:
+                    importError = mapper.readValue(response.body().byteStream(), ImportError.class);
+                    logError(logger, "The license of this XL TestView instance is not valid. *** Please contact your XebiaLabs sales representative to obtain a valid license.");
+                    throw new IllegalStateException(importError.getMessage());
                 case 422:
                     logWarn(logger, "Unable to process results.");
                     logWarn(logger, "Are you sure your include/exclude pattern provides all needed files for the test tool?");
@@ -196,7 +200,7 @@ public class XLTestServerImpl implements XLTestServer {
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(logger);
             throw new IOException("I/O error uploading test run data to " + serverUrl.toString(), e);
         }
     }
@@ -233,6 +237,10 @@ public class XLTestServerImpl implements XLTestServer {
         logger.printf(XL_TEST_LOG_FORMAT, "WARN", message);
     }
 
+    private void logError(PrintStream logger, String message) {
+        LOG.error(message);
+        logger.printf(XL_TEST_LOG_FORMAT, "ERROR", message);
+    }
     private void log(PrintStream logger, String level, String message, Exception e) {
         if (e != null) {
             LOG.error("Exception ", e);
